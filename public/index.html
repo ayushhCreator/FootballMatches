@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Football Matches</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 text-gray-800 font-sans">
+  <div class="max-w-4xl mx-auto p-4">
+    <h1 class="text-3xl font-bold text-center mb-6">⚽ Football Matches</h1>
+
+    <section class="mb-8">
+      <h2 class="text-2xl font-semibold mb-2">Today's Matches</h2>
+      <div id="todayMatches" class="space-y-3 bg-white shadow rounded-lg p-4">
+        <p class="text-gray-500" id="todayLoading">Loading...</p>
+      </div>
+    </section>
+
+    <section>
+      <h2 class="text-2xl font-semibold mb-2">Upcoming Matches</h2>
+      <div id="upcomingMatches" class="space-y-3 bg-white shadow rounded-lg p-4">
+        <p class="text-gray-500" id="upcomingLoading">Loading...</p>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    async function fetchMatches(url, containerId, loadingId) {
+      try {
+        const res = await fetch(url);
+        const data = await res.json();
+        document.getElementById(loadingId).style.display = 'none';
+        const container = document.getElementById(containerId);
+
+        if (!data.matches || data.matches.length === 0) {
+          container.innerHTML += '<p class="text-sm text-gray-600">No matches found.</p>';
+          return;
+        }
+
+        data.matches.forEach(match => {
+          const matchEl = document.createElement('div');
+          matchEl.className = "border-b border-gray-200 pb-2";
+
+          matchEl.innerHTML = `
+            <div class="font-medium text-lg">${match.homeTeam.name} vs ${match.awayTeam.name}</div>
+            <div class="text-sm text-gray-600">
+              Competition: ${match.competition.name} <br />
+              ${new Date(match.utcDate).toLocaleString()}
+              <span class="ml-2 px-2 py-0.5 bg-blue-100 text-blue-800 rounded text-xs">${match.status}</span>
+            </div>
+          `;
+          container.appendChild(matchEl);
+        });
+
+      } catch (error) {
+        console.error(error);
+        document.getElementById(loadingId).innerText = 'Error fetching matches.';
+      }
+    }
+
+    fetchMatches('/api/matches/today', 'todayMatches', 'todayLoading');
+    fetchMatches('/api/matches/upcoming', 'upcomingMatches', 'upcomingLoading');
+  </script>
+</body>
+</html>
